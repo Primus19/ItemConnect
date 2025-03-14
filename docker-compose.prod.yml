@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=itemconnect
+      - MONGO_INITDB_ROOT_PASSWORD=password123
+    networks:
+      - itemconnect-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: itemconnect/backend:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://itemconnect:password123@mongo:27017/itemconnect?authSource=admin
+      - JWT_SECRET=itemconnect_jwt_secret_change_in_production
+      - FRONTEND_URL=https://itemconnect.example.com
+    depends_on:
+      - mongo
+    restart: always
+    networks:
+      - itemconnect-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: itemconnect/frontend:latest
+    ports:
+      - "80:3000"
+    environment:
+      - REACT_APP_API_URL=https://api.itemconnect.example.com/api
+      - REACT_APP_SOCKET_URL=https://api.itemconnect.example.com
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - itemconnect-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  itemconnect-network:
+    driver: bridge
