@@ -9,10 +9,13 @@ const authRoutes = require('./routes/auth.routes');
 const itemRoutes = require('./routes/item.routes');
 const chatRoutes = require('./routes/chat.routes');
 const categoryRoutes = require('./routes/category.routes');
+const stripeRoutes = require('./routes/stripe.routes');
+const paypalRoutes = require('./routes/paypal.routes');
 const seedDatabase = require('./seed');
 
 // Initialize express app
 const app = express();
+require('./seed/startupSeeder');
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -26,6 +29,9 @@ const io = socketIo(server, {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use('/api/payment', stripeRoutes);
+app.use('/api/payment', paypalRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

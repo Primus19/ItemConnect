@@ -8,6 +8,7 @@ const authService = {
   
   // Login user
   login: (credentials) => {
+    // Ensure we're using email for authentication as expected by backend
     return api.post('/auth/login', credentials);
   },
   
@@ -19,6 +20,14 @@ const authService = {
   // Update user profile
   updateProfile: (userData) => {
     return api.put('/auth/profile', userData);
+  },
+  
+  // Refresh token if needed
+  refreshToken: () => {
+    const token = localStorage.getItem('token');
+    if (!token) return Promise.reject('No token found');
+    
+    return api.post('/auth/refresh-token');
   }
 };
 
