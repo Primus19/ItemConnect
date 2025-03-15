@@ -1,10 +1,7 @@
 version: '3'
-
 services:
   mongo:
     image: mongo:latest
-    ports:
-      - "27017:27017"
     volumes:
       - mongodb_data:/data/db
     restart: always
@@ -13,6 +10,11 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=password123
     networks:
       - itemconnect-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   backend:
     build:
@@ -32,6 +34,11 @@ services:
     restart: always
     networks:
       - itemconnect-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     build:
@@ -39,15 +46,18 @@ services:
       dockerfile: Dockerfile
     image: itemconnect/frontend:latest
     ports:
-      - "80:3000"
-    environment:
-      - REACT_APP_API_URL=https://api.itemconnect.example.com/api
-      - REACT_APP_SOCKET_URL=https://api.itemconnect.example.com
+      - "80:80"
+      - "443:443"
     depends_on:
       - backend
     restart: always
     networks:
       - itemconnect-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   mongodb_data:
