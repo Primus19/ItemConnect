@@ -1,156 +1,355 @@
 # ItemConnect Deployment Guide
 
-This guide provides instructions for deploying ItemConnect using Docker, Docker Compose, and Kubernetes.
+This document provides detailed instructions for deploying the ItemConnect application in both development and production environments.
 
-## Preview Link
+## Development Deployment
 
-ItemConnect is now available at: http://10.0.7.0
+The development setup is designed for local development with hot-reloading capabilities for both frontend and backend.
 
-Test User Credentials:
-- Email: john@example.com
-- Password: password123
+### Prerequisites
 
-## Deployment Options
+- Docker Engine (version 20.10.0 or higher)
+- Docker Compose (version 2.0.0 or higher)
+- Git
 
-### 1. Docker Compose (Development)
+### Steps
 
-For local development or simple deployment:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/ItemConnect.git
+   cd ItemConnect
+   ```
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/itemconnect.git
-cd itemconnect
+2. **Start the development environment**
+   ```bash
+   docker-compose up
+   ```
+   This command will:
+   - Build the Docker images if they don't exist
+   - Create and start the containers for MongoDB, backend, and frontend
+   - Mount the source code as volumes for hot-reloading
 
-# Start all services
-docker-compose up -d
+3. **Accessing the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000/api
+   - MongoDB: localhost:27017 (accessible from your host machine for database tools)
 
-# View logs
-docker-compose logs -f
+4. **Stopping the environment**
+   ```bash
+   # Press Ctrl+C if running in foreground, or
+   docker-compose down
+   ```
 
-# Stop all services
-docker-compose down
-```
+5. **Viewing logs**
+   ```bash
+   # All services
+   docker-compose logs
 
-### 2. Docker Compose (Production)
+   # Specific service
+   docker-compose logs frontend
+   docker-compose logs backend
+   docker-compose logs mongo
+   ```
 
-For production deployment with enhanced security:
+## Production Deployment
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/itemconnect.git
-cd itemconnect
+The production setup is optimized for performance, security, and reliability.
 
-# Start all services in production mode
-docker-compose -f docker-compose.prod.yml up -d
+### Prerequisites
 
-# View logs
-docker-compose -f docker-compose.prod.yml logs -f
+- Docker Engine (version 20.10.0 or higher)
+- Docker Compose (version 2.0.0 or higher)
+- A server with at least 1GB RAM and 10GB storage
+- Domain name (optional but recommended)
 
-# Stop all services
-docker-compose -f docker-compose.prod.yml down
-```
+### Steps
 
-### 3. Docker Images
+1. **Clone the repository on your server**
+   ```bash
+   git clone https://github.com/yourusername/ItemConnect.git
+   cd ItemConnect
+   ```
 
-Use the pre-built Docker images from Docker Hub:
+2. **Configure environment variables**
+   
+   Create a `.env` file in the root directory:
+   ```
+   # MongoDB
+   MONGO_USERNAME=itemconnect
+   MONGO_PASSWORD=your_secure_password_here
+   
+   # JWT
+   JWT_SECRET=your_secure_jwt_secret_here
+   
+   # Frontend URL
+   FRONTEND_URL=https://your-domain.com
+   
+   # API URL for frontend
+   REACT_APP_API_URL=https://your-domain.com/api
+   REACT_APP_SOCKET_URL=https://your-domain.com
+   ```
 
-```bash
-# Pull the latest images
-docker pull itemconnect/backend:latest
-docker pull itemconnect/frontend:latest
+3. **Build the Docker images**
+   ```bash
+   ./build-images.sh
+   ```
 
-# Run the backend
-docker run -d \
-  --name itemconnect-backend \
-  -p 5000:5000 \
-  -e PORT=5000 \
-  -e MONGODB_URI=mongodb://your-mongo-uri \
-  -e JWT_SECRET=your-secret-key \
-  -e FRONTEND_URL=https://your-frontend-url \
-  itemconnect/backend:latest
+4. **Start the production environment**
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
 
-# Run the frontend
-docker run -d \
-  --name itemconnect-frontend \
-  -p 3000:3000 \
-  -e REACT_APP_API_URL=https://your-api-url/api \
-  -e REACT_APP_SOCKET_URL=https://your-api-url \
-  itemconnect/frontend:latest
-```
+5. **Accessing the application**
+   - If using a domain: https://your-domain.com
+   - If using IP directly: http://your-server-ip
 
-### 4. Kubernetes Deployment
+6. **Stopping the environment**
+   ```bash
+   docker-compose -f docker-compose.prod.yml down
+   ```
 
-For scalable, production-grade deployment on Kubernetes:
+7. **Viewing logs**
+   ```bash
+   # All services
+   docker-compose -f docker-compose.prod.yml logs
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/itemconnect.git
-cd itemconnect
+   # Specific service
+   docker-compose -f docker-compose.prod.yml logs frontend
+   docker-compose -f docker-compose.prod.yml logs backend
+   docker-compose -f docker-compose.prod.yml logs mongo
+   ```
 
-# Deploy to Kubernetes
-kubectl apply -f k8s/mongo-deployment.yaml
-kubectl apply -f k8s/backend-deployment.yaml
-kubectl apply -f k8s/frontend-deployment.yaml
-kubectl apply -f k8s/ingress.yaml
+## Setting Up SSL with Let's Encrypt
 
-# Check deployment status
-kubectl get pods
-kubectl get services
-kubectl get ingress
+For production environments, it's recommended to secure your application with SSL.
 
-# View backend logs
-kubectl logs -f deployment/backend
-```
+1. **Install Certbot**
+   ```bash
+   apt-get update
+   apt-get install certbot
+   ```
 
-## Building Custom Docker Images
+2. **Obtain SSL certificates**
+   ```bash
+   certbot certonly --standalone -d your-domain.com
+   ```
 
-If you want to build and push your own Docker images:
+3. **Update the nginx.conf file**
+   
+   Edit `frontend/nginx.conf` to include SSL configuration:
+   ```nginx
+   server {
+       listen 80;
+       server_name your-domain.com;
+       return 301 https://$host$request_uri;
+   }
 
-```bash
-# Navigate to the ItemConnect directory
-cd itemconnect
+   server {
+       listen 443 ssl;
+       server_name your-domain.com;
 
-# Run the build script
-./build-images.sh
+       ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+       ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+       
+       # Rest of your configuration...
+   }
+   ```
 
-# Login to Docker Hub
-docker login
+4. **Update docker-compose.prod.yml**
+   
+   Add volumes for SSL certificates:
+   ```yaml
+   frontend:
+     # ... existing configuration
+     volumes:
+       - /etc/letsencrypt:/etc/letsencrypt:ro
+   ```
 
-# Push images to Docker Hub
-docker push yourusername/itemconnect-backend:latest
-docker push yourusername/itemconnect-frontend:latest
-```
+5. **Restart the containers**
+   ```bash
+   docker-compose -f docker-compose.prod.yml down
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
 
-## Environment Variables
+## Database Backup and Restore
 
-### Backend Environment Variables
+### Backup MongoDB Data
 
-- `PORT`: Port for the backend API (default: 5000)
-- `NODE_ENV`: Environment mode (development, production)
-- `MONGODB_URI`: MongoDB connection string
-- `JWT_SECRET`: Secret key for JWT token generation
-- `FRONTEND_URL`: URL of the frontend application
+1. **Create a backup script**
+   
+   Create `backup-mongo.sh`:
+   ```bash
+   #!/bin/bash
+   TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+   BACKUP_DIR="/path/to/backups"
+   
+   # Create backup directory if it doesn't exist
+   mkdir -p $BACKUP_DIR
+   
+   # Backup MongoDB
+   docker exec -it itemconnect_mongo_1 mongodump --out=/data/db/backup
+   
+   # Copy backup from container to host
+   docker cp itemconnect_mongo_1:/data/db/backup $BACKUP_DIR/mongodb_$TIMESTAMP
+   
+   # Compress backup
+   tar -zcvf $BACKUP_DIR/mongodb_$TIMESTAMP.tar.gz $BACKUP_DIR/mongodb_$TIMESTAMP
+   
+   # Remove uncompressed backup
+   rm -rf $BACKUP_DIR/mongodb_$TIMESTAMP
+   
+   echo "Backup completed: $BACKUP_DIR/mongodb_$TIMESTAMP.tar.gz"
+   ```
 
-### Frontend Environment Variables
+2. **Make the script executable**
+   ```bash
+   chmod +x backup-mongo.sh
+   ```
 
-- `REACT_APP_API_URL`: URL of the backend API
-- `REACT_APP_SOCKET_URL`: URL for socket.io connections
+3. **Set up a cron job for automated backups**
+   ```bash
+   crontab -e
+   ```
+   
+   Add the following line for daily backups at 2 AM:
+   ```
+   0 2 * * * /path/to/ItemConnect/backup-mongo.sh
+   ```
 
-## SSL/TLS Configuration
+### Restore MongoDB Data
 
-For production deployments, it's recommended to set up SSL/TLS:
+1. **Extract the backup**
+   ```bash
+   tar -zxvf mongodb_YYYYMMDD_HHMMSS.tar.gz
+   ```
 
-1. With Docker Compose, you can use a reverse proxy like Nginx or Traefik
-2. With Kubernetes, the provided Ingress configuration supports TLS via cert-manager
+2. **Copy the backup to the container**
+   ```bash
+   docker cp /path/to/extracted/backup itemconnect_mongo_1:/data/db/restore
+   ```
+
+3. **Restore the database**
+   ```bash
+   docker exec -it itemconnect_mongo_1 mongorestore /data/db/restore
+   ```
+
+## Updating the Application
+
+### Development Environment
+
+1. **Pull the latest changes**
+   ```bash
+   git pull
+   ```
+
+2. **Restart the containers**
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+### Production Environment
+
+1. **Pull the latest changes**
+   ```bash
+   git pull
+   ```
+
+2. **Rebuild the images**
+   ```bash
+   ./build-images.sh
+   ```
+
+3. **Restart the containers**
+   ```bash
+   docker-compose -f docker-compose.prod.yml down
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
 
 ## Monitoring and Maintenance
 
-- Use Docker logs or Kubernetes logs to monitor the application
-- Backup the MongoDB database regularly
-- Update the Docker images for security patches
+### Container Health Checks
 
-## Support
+Monitor the health of your containers:
+```bash
+docker ps
+docker stats
+```
 
-For additional help:
-- Check the [API Documentation](./docs/api.md)
-- Review the [Architecture Overview](./docs/architecture.md)
+### Logs Management
+
+Logs are configured with rotation to prevent disk space issues:
+```yaml
+logging:
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+```
+
+This configuration:
+- Limits log files to 10MB each
+- Keeps a maximum of 3 log files per container
+- Automatically rotates logs when they reach the size limit
+
+### Performance Tuning
+
+For better performance in production:
+
+1. **Increase MongoDB cache size**
+   
+   Edit `docker-compose.prod.yml`:
+   ```yaml
+   mongo:
+     # ... existing configuration
+     command: --wiredTigerCacheSizeGB 1
+   ```
+
+2. **Optimize Node.js memory**
+   
+   Edit `backend/Dockerfile`:
+   ```Dockerfile
+   CMD ["node", "--max-old-space-size=512", "server.js"]
+   ```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Container fails to start**
+   
+   Check container logs:
+   ```bash
+   docker-compose logs [service_name]
+   ```
+
+2. **MongoDB connection issues**
+   
+   Verify MongoDB is running:
+   ```bash
+   docker ps | grep mongo
+   ```
+   
+   Check MongoDB logs:
+   ```bash
+   docker-compose logs mongo
+   ```
+
+3. **Frontend can't connect to backend**
+   
+   Verify environment variables:
+   ```bash
+   docker-compose config
+   ```
+   
+   Check nginx configuration:
+   ```bash
+   docker exec -it itemconnect_frontend_1 cat /etc/nginx/conf.d/default.conf
+   ```
+
+### Getting Support
+
+If you encounter issues not covered in this guide, please:
+1. Check the application logs
+2. Review the Docker and Docker Compose documentation
+3. Contact support at support@itemconnect.example.com

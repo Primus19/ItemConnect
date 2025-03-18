@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
+const log = require('../utils/logger');
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -53,50 +54,39 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // Check if user exists
+    log('➡️ LOGIN REQUEST: ' + JSON.stringify({ email }));
+
     const user = await User.findOne({ email });
-    
     if (!user) {
+      log('❌ No user found for email: ' + email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
-    
-    if (!user.isActive) {
-      return res.status(401).json({ message: 'Account is inactive' });
-    }
-    
-    // Check password
+
     const isMatch = await user.isValidPassword(password);
-    
+    log('🔐 Password match result: ' + isMatch);
+
     if (!isMatch) {
+      log('❌ Incorrect password for: ' + email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
-    
-    // Update last active
-    user.lastActive = Date.now();
-    await user.save();
-    
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id }, 
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-    
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    log('✅ LOGIN SUCCESS: ' + user.email);
+
     res.status(200).json({
       token,
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
         avatar: user.avatar,
-        location: user.location
+        firstName: user.firstName,
+        lastName: user.lastName
       }
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    log('💥 LOGIN ERROR: ' + err.message);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

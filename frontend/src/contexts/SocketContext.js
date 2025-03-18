@@ -16,7 +16,8 @@ export function SocketProvider({ children }) {
   useEffect(() => {
     // Only connect to socket if user is authenticated
     if (isAuthenticated && currentUser) {
-      const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+      // Replace with prod socket URL if needed
+      const SOCKET_URL = 'http://localhost:5000';
       console.log('Socket URL:', SOCKET_URL); // Debug log
       
       // Create socket connection
@@ -55,7 +56,7 @@ export function SocketProvider({ children }) {
       setSocket(null);
       setConnected(false);
     }
-  }, [isAuthenticated, currentUser]);
+  }, [isAuthenticated, currentUser, socket]);
 
   // Join a specific chat room
   const joinChat = (chatId) => {

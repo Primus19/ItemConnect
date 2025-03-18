@@ -1,0 +1,58 @@
+/* Base styles for the application */
+body {
+  margin: 0;
+  font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F9FAFB;
+  color: #111827;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Ensure the root element takes full height */
+html, body, #root {
+  height: 100%;
+}
+
+/* Global link styles */
+a {
+  text-decoration: none;
+  color: #4F46E5;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Remove outline for non-keyboard focus */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Proper focus styles for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better mobile tap targets */
+button, 
+[role="button"],
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+/* Prevent text size adjustment on orientation change */
+html {
+  -webkit-text-size-adjust: 100%;
+}
