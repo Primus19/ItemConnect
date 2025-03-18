@@ -17,7 +17,6 @@ const authService = {
   // Login user
   login: (credentials) => {
     // Ensure we're using email for authentication as expected by backend
-<<<<<<< HEAD
     return api.post('/auth/login', credentials)
       .then(response => {
         // Ensure we're returning the data in a consistent format
@@ -27,9 +26,6 @@ const authService = {
           user: response.data.user
         };
       });
-=======
-    return api.post('/auth/login', credentials);
->>>>>>> 30fa407adb45d2d7f3db9506a9c95df6cd7ecaa2
   },
   
   // Get current user profile

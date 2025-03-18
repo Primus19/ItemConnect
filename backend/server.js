@@ -7,19 +7,11 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const itemRoutes = require('./routes/item.routes');
 const chatRoutes = require('./routes/chat.routes');
-<<<<<<< HEAD
 const path = require('path');
 const morgan = require('morgan');
 const fs = require('fs');
-=======
-const categoryRoutes = require('./routes/category.routes');
-const stripeRoutes = require('./routes/stripe.routes');
-const paypalRoutes = require('./routes/paypal.routes');
-const seedDatabase = require('./seed');
->>>>>>> 30fa407adb45d2d7f3db9506a9c95df6cd7ecaa2
 
 const app = express();
-require('./seed/startupSeeder');
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -29,25 +21,11 @@ const io = new Server(server, {
   }
 });
 
-<<<<<<< HEAD
 io.on('connection', (socket) => {
   console.log('🟢 Socket connected:', socket.id);
   socket.on('disconnect', () => {
     console.log('🔴 Socket disconnected:', socket.id);
   });
-=======
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use('/api/payment', stripeRoutes);
-app.use('/api/payment', paypalRoutes);
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'ItemConnect API is running' });
->>>>>>> 30fa407adb45d2d7f3db9506a9c95df6cd7ecaa2
 });
 
 connectDB();

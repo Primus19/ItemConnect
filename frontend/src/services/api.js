@@ -1,6 +1,5 @@
-const API_URL = window.REACT_APP_API_URL || "http://localhost:5000/api";
+import axios from 'axios';
 
-<<<<<<< HEAD
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
   withCredentials: true,
@@ -38,6 +37,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-=======
-export default API_URL;
->>>>>>> 30fa407adb45d2d7f3db9506a9c95df6cd7ecaa2

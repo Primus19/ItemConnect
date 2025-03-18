@@ -20,13 +20,9 @@
     "socket.io": "^4.6.1",
     "validator": "^13.9.0",
     "stripe": "^12.0.0",
-<<<<<<< HEAD
     "axios": "^1.6.7",
     "cookie-parser": "^1.4.6",
     "morgan": "^1.10.0"
-=======
-    "axios": "^1.6.7"
->>>>>>> 30fa407adb45d2d7f3db9506a9c95df6cd7ecaa2
   },
   "devDependencies": {
     "jest": "^29.5.0",
