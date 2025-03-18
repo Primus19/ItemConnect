@@ -33,7 +33,11 @@ const validationSchema = Yup.object({
 
 const LoginPage = () => {
   const navigate = useNavigate();
+<<<<<<< HEAD
   const { login, isAuthenticated, authError } = useAuth();
+=======
+  const { login, authError, clearAuthError, isAuthenticated } = useAuth();
+>>>>>>> 30fa407adb45d2d7f3db9506a9c95df6cd7ecaa2
   const [localError, setLocalError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -45,8 +49,13 @@ const LoginPage = () => {
     }
     
     // Clear any auth errors when component mounts
+<<<<<<< HEAD
     // No clearAuthError function available
   }, []); // Added missing closing bracket and dependency array
+=======
+    clearAuthError();
+  }, [isAuthenticated, navigate, clearAuthError]);
+>>>>>>> 30fa407adb45d2d7f3db9506a9c95df6cd7ecaa2
   
   const formik = useFormik({
     initialValues: {
